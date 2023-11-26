@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 import os
 from pathlib import Path
+from datetime import timedelta
 
 from dotenv import load_dotenv
 
@@ -42,7 +43,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     "rest_framework",
+    "rest_framework_simplejwt",
+    "drf_yasg",
+    "corsheaders",
+    "djoser",
+    "phonenumber_field",
+    "django_filters",
+
     "users",
     "ads",
     "redoc",
@@ -52,12 +61,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "skymarket.urls"
@@ -82,9 +92,28 @@ WSGI_APPLICATION = "skymarket.wsgi.application"
 
 # TODO здесь мы настраиваем аутентификацию и пагинацию
 REST_FRAMEWORK = {
+    # Авторизация JWT tokens
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    # Авторизация настройка
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
 }
+
+# Срок жизни токенов
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
+
 # TODO здесь мы настраиваем Djoser
 DJOSER = {
+    'SERIALIZERS': {
+        'user_create': 'users.serializers.UserRegistrationSerializer'
+    },
+    'LOGIN_FIELD': 'email'
 }
 
 # Database
@@ -92,6 +121,14 @@ DJOSER = {
 
 # TODO здесь необходимо настроить подключение к БД
 DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_POSTGRES'),
+        'USER': os.getenv('USER_POSTGRES'),
+        'PASSWORD': os.getenv('PASSWORD_POSTGRES'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
+    }
 }
 
 
@@ -117,7 +154,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
-LANGUAGE_CODE = "ru"
+LANGUAGE_CODE = "ru-ru"
 
 TIME_ZONE = "UTC"
 
@@ -125,6 +162,7 @@ USE_I18N = True
 
 USE_TZ = True
 
+PHONENUMBER_DEFAULT_REGION = 'RU'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
@@ -138,18 +176,29 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "django_media")
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+AUTH_USER_MODEL = "users.User"
 
 # Include Email Backend
 # TODO эти переменные мы добавили чтобы помочь Вам настроить почтовый ящик на django.
 # TODO теперь Вам необходимо создать файл .env на основе .env.example
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_USE_TLS = True
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_HOST = "smtp.rambler.ru"
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-EMAIL_PORT = os.environ.get("EMAIL_PORT")
+EMAIL_PORT = 465
