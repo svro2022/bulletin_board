@@ -35,7 +35,7 @@
 ### Запуск проекта 
 
 **Клонируем проект по ссылке:**
-> https://github.com/svro2022/coursework_6_skymarket.git
+> https://github.com/svro2022/bulletin_board.git
 
 ### Через docker
 Создаем контейнер:
